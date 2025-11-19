@@ -1,2 +1,0 @@
-# DieRichX.github.io
-test
