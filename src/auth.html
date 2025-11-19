@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://telegram.org https://oauth.telegram.org; script-src 'self' https://telegram.org 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src https://oauth.telegram.org; img-src 'self' data: blob: https://*.telegram.org https://*.tgcdn.com;">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Telegram Login</title>
+  <style>
+    body {
+      font-family: system-ui, Segoe UI, Roboto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: #fff;
+    }
+    .wrap {
+      max-width: 420px;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 6px 24px rgba(0,0,0,.08);
+      text-align: center;
+    }
+    .or {
+      margin-top: 12px;
+      color: #666;
+      font-size: 13px;
+    }
+    .manual {
+      margin-top: 12px;
+    }
+    button {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 0;
+      background: #2dd4bf;
+      color: #fff;
+      cursor: pointer;
+    }
+    /* Стили для загрузки */
+    .loading {
+      color: #666;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h3>Войти через Telegram</h3>
+    
+    <div id="widget-container">
+      <div class="loading">Загрузка виджета Telegram...</div>
+    </div>
+
+    <div class="or">или</div>
+    <div class="manual">
+      <button id="cancelBtn">Отмена</button>
+    </div>
+  </div>
+
+  <script>
+    function onTelegramAuth(user) {
+      console.log('Telegram auth success:', user);
+      if (window.teleAuth && typeof window.teleAuth.send === 'function') {
+        window.teleAuth.send(user);
+      } else {
+        console.error('teleAuth not available');
+      }
+    }
+
+    // Загружаем виджет Telegram
+    function loadTelegramWidget() {
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://telegram.org/js/telegram-widget.js?21';
+      script.setAttribute('data-telegram-login', 'Messenger_Tests_bot');
+      script.setAttribute('data-size', 'large');
+      script.setAttribute('data-userpic', 'true');
+      script.setAttribute('data-onauth', 'onTelegramAuth');
+      script.setAttribute('data-request-access', 'write');
+      
+      script.onload = function() {
+        console.log('Telegram widget loaded successfully');
+        document.getElementById('widget-container').innerHTML = '';
+      };
+      
+      script.onerror = function() {
+        console.error('Failed to load Telegram widget');
+        document.getElementById('widget-container').innerHTML = '<div style="color: red;">Ошибка загрузки виджета Telegram</div>';
+      };
+      
+      document.head.appendChild(script);
+    }
+
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+      if (window.teleAuth && typeof window.teleAuth.cancel === 'function') {
+        window.teleAuth.cancel();
+      }
+    });
+
+    // Загружаем виджет при готовности DOM
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadTelegramWidget);
+    } else {
+      loadTelegramWidget();
+    }
+  </script>
+</body>
+</html>
