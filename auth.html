@@ -3,78 +3,86 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Telegram Login - Реальный вход</title>
+  <title>Telegram Login</title>
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: system-ui, sans-serif;
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100vh;
       margin: 0;
-      background: #0088cc;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
     }
     .container {
       background: white;
+      color: #333;
       padding: 40px;
-      border-radius: 12px;
+      border-radius: 15px;
       text-align: center;
-      max-width: 380px;
+      max-width: 400px;
       width: 90%;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
     h1 {
-      color: #333;
       margin-bottom: 10px;
-      font-size: 24px;
     }
     .subtitle {
       color: #666;
       margin-bottom: 30px;
     }
     .widget-container {
-      margin: 25px 0;
+      margin: 30px 0;
       min-height: 50px;
     }
     .status {
-      padding: 12px;
+      padding: 15px;
       border-radius: 8px;
-      margin: 15px 0;
+      margin: 20px 0;
       font-size: 14px;
     }
-    .loading {
-      background: #e3f2fd;
-      color: #1565c0;
+    .success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
     }
     .error {
-      background: #ffebee;
-      color: #c62828;
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Вход в мессенджер</h1>
+    <h1>🔐 Вход в мессенджер</h1>
     <div class="subtitle">Через ваш аккаунт Telegram</div>
     
     <div class="widget-container">
-      <!-- ЗАМЕНИТЕ Messenger_Tests_bot на ТОЧНЫЙ username вашего бота -->
+      <!-- ИСПОЛЬЗУЕМ НОВОГО БОТА -->
       <script async 
         src="https://telegram.org/js/telegram-widget.js?22" 
         data-telegram-login="YourMessengerAuthBot"
         data-size="large" 
-        data-userpic="false"
+        data-userpic="true"
         data-onauth="onTelegramAuth">
       </script>
     </div>
 
-    <div class="status loading" id="status">
-      Загрузка системы входа...
+    <div id="status" class="status info">
+      Загрузка системы входа Telegram...
     </div>
 
-    <button onclick="closeWindow()" style="
-      background: #f5f5f5;
-      border: 1px solid #ddd;
+    <button onclick="window.close()" style="
+      background: #6c757d;
+      color: white;
+      border: none;
       padding: 10px 20px;
       border-radius: 6px;
       cursor: pointer;
@@ -85,41 +93,59 @@
     // Функция для реального входа через Telegram
     function onTelegramAuth(user) {
       console.log('🔐 РЕАЛЬНЫЙ пользователь Telegram:', user);
-      document.getElementById('status').textContent = '✅ Вход выполнен!';
       
-      // Передаем данные в Electron приложение
+      // Показываем успех
+      const status = document.getElementById('status');
+      status.className = 'status success';
+      status.innerHTML = `
+        <strong>✅ Вход выполнен!</strong><br>
+        Имя: ${user.first_name}<br>
+        Username: @${user.username || 'не указан'}<br>
+        ID: ${user.id}
+      `;
+      
+      // Передаем данные в Electron приложение (если открыто в Electron)
       if (window.teleAuth && typeof window.teleAuth.send === 'function') {
         window.teleAuth.send(user);
-      } else {
-        // Если открыто в браузере
-        alert('Вход выполнен: ' + user.first_name + ' (@' + (user.username || 'no_username') + ')');
       }
-    }
-
-    function closeWindow() {
-      if (window.teleAuth && typeof window.teleAuth.cancel === 'function') {
-        window.teleAuth.cancel();
-      } else {
-        window.close();
-      }
+      
+      // Автоматически закрываем через 3 секунды
+      setTimeout(() => {
+        if (window.teleAuth && typeof window.teleAuth.cancel === 'function') {
+          window.teleAuth.cancel();
+        } else {
+          window.close();
+        }
+      }, 3000);
     }
 
     // Проверяем загрузку виджета
     setTimeout(() => {
-      const widget = document.querySelector('.tgme_widget_login');
+      const widget = document.querySelector('.tgme_widget');
+      const status = document.getElementById('status');
+      
       if (widget && widget.offsetParent !== null) {
-        document.getElementById('status').textContent = '✅ Готово! Нажмите кнопку выше для входа';
+        status.className = 'status success';
+        status.innerHTML = '✅ Готово! Нажмите кнопку "Login with Telegram" выше';
       } else {
-        document.getElementById('status').className = 'status error';
-        document.getElementById('status').innerHTML = `
+        status.className = 'status error';
+        status.innerHTML = `
           ❌ Кнопка входа не загрузилась<br><br>
-          <strong>Решение:</strong><br>
-          1. Убедитесь что в @BotFather для бота <strong>Messenger_Tests_bot</strong><br>
-          2. Указан домен: <strong>dierichx.github.io</strong><br>
-          3. Бот активен и не имеет ограничений
+          <strong>Проверьте:</strong><br>
+          • Бот: <strong>YourMessengerAuthBot</strong><br>
+          • Домен: <strong>dierichx.github.io</strong><br>
+          • Страница: <strong>auth.html</strong>
         `;
       }
     }, 3000);
+
+    // Дополнительная проверка через 5 секунд
+    setTimeout(() => {
+      const widget = document.querySelector('.tgme_widget');
+      if (!widget) {
+        console.log('Telegram widget still not loaded');
+      }
+    }, 5000);
   </script>
 </body>
 </html>
