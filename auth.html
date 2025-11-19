@@ -3,191 +3,175 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Telegram Login - Messenger</title>
+  <title>Telegram Login</title>
   <style>
-    /* Тот же красивый стиль что и ранее */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      display: flex; align-items: center; justify-content: center;
-      height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 20px;
+    body {
+      font-family: system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea, #764ba2);
     }
     .container {
-      background: white; border-radius: 20px; padding: 40px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.1); max-width: 400px; width: 100%;
+      background: white;
+      padding: 40px;
+      border-radius: 15px;
       text-align: center;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
-    .logo { font-size: 64px; margin-bottom: 20px; animation: float 3s ease-in-out infinite; }
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
+    h2 {
+      color: #2d3748;
+      margin-bottom: 10px;
     }
-    h1 { color: #1a202c; margin-bottom: 10px; font-weight: 700; font-size: 28px; }
-    .subtitle { color: #718096; margin-bottom: 30px; line-height: 1.5; }
-    .user-card {
-      background: #f7fafc; border-radius: 15px; padding: 20px; margin: 25px 0;
-      border: 2px dashed #cbd5e0;
+    .description {
+      color: #718096;
+      margin-bottom: 30px;
+      font-size: 14px;
     }
-    .user-avatar {
-      width: 80px; height: 80px; background: linear-gradient(135deg, #667eea, #764ba2);
-      border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center;
-      justify-content: center; font-size: 32px; color: white; font-weight: bold;
+    .telegram-widget {
+      margin: 25px 0;
     }
-    .user-name { font-size: 18px; font-weight: 600; color: #2d3748; margin-bottom: 5px; }
-    .user-details { display: grid; gap: 8px; margin-top: 15px; }
-    .detail { display: flex; justify-content: space-between; font-size: 14px; }
-    .label { color: #718096; }
-    .value { color: #2d3748; font-weight: 500; }
-    .login-btn {
-      width: 100%; background: linear-gradient(135deg, #0088cc, #0077b3); color: white;
-      border: none; padding: 18px; border-radius: 12px; font-size: 16px; font-weight: 600;
-      cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center;
-      justify-content: center; gap: 12px; margin-bottom: 20px;
+    .dev-section {
+      background: #f7fafc;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 20px 0;
+      border-left: 4px solid #e53e3e;
     }
-    .login-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,136,204,0.3); }
-    .login-btn:active { transform: translateY(0); }
-    .btn-icon { font-size: 20px; }
-    .divider { display: flex; align-items: center; margin: 25px 0; color: #a0aec0; }
-    .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #e2e8f0; }
-    .divider span { padding: 0 15px; font-size: 14px; }
+    .dev-title {
+      color: #e53e3e;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .test-btn {
+      background: #e53e3e;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      margin: 5px;
+    }
     .cancel-btn {
-      width: 100%; background: white; color: #718096; border: 2px solid #e2e8f0;
-      padding: 15px; border-radius: 12px; font-size: 15px; font-weight: 500;
-      cursor: pointer; transition: all 0.2s ease;
+      background: #718096;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 15px;
     }
-    .cancel-btn:hover { background: #f7fafc; border-color: #cbd5e0; }
-    .info-note {
-      background: #fffaf0; border: 1px solid #fed7aa; border-radius: 10px;
-      padding: 15px; margin-top: 20px; font-size: 13px; color: #92400e;
-      text-align: left;
-    }
-    .success { background: #c6f6d5 !important; color: #22543d !important; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="logo">🔐</div>
-    <h1>Telegram Login</h1>
-    <div class="subtitle">Безопасный вход в мессенджер</div>
+    <h2>🔐 Войти через Telegram</h2>
+    <div class="description">Используйте кнопку ниже для безопасного входа</div>
     
-    <div class="user-card">
-      <div class="user-avatar" id="userAvatar">TU</div>
-      <div class="user-name" id="userName">Telegram User</div>
-      <div class="user-details">
-        <div class="detail">
-          <span class="label">Username:</span>
-          <span class="value" id="userUsername">@user</span>
-        </div>
-        <div class="detail">
-          <span class="label">User ID:</span>
-          <span class="value" id="userId">123456789</span>
-        </div>
-        <div class="detail">
-          <span class="label">Auth:</span>
-          <span class="value" id="authTime">Только что</span>
-        </div>
+    <!-- Настоящий Telegram Widget -->
+    <div class="telegram-widget">
+      <script async 
+        src="https://telegram.org/js/telegram-widget.js?22" 
+        data-telegram-login="Messenger_Tests_bot"
+        data-size="large" 
+        data-userpic="true"
+        data-onauth="onTelegramAuth" 
+        data-request-access="write">
+      </script>
+    </div>
+
+    <!-- Секция для разработчиков -->
+    <div class="dev-section">
+      <div class="dev-title">⚙️ ДЛЯ РАЗРАБОТЧИКОВ</div>
+      <div style="font-size: 11px; color: #4a5568; margin-bottom: 10px;">
+        Эти кнопки только для тестирования. Не используйте для реальных пользователей!
       </div>
+      <button class="test-btn" onclick="testAuthWithToken()">Тест с токеном</button>
+      <button class="test-btn" onclick="testAuthWithoutToken()">Тест без токена</button>
     </div>
-    
-    <button class="login-btn" id="loginBtn">
-      <span class="btn-icon">📲</span>
-      <span>Войти через Telegram</span>
-    </button>
-    
-    <div class="divider">
-      <span>или</span>
-    </div>
-    
-    <button class="cancel-btn" id="cancelBtn">Отмена</button>
-    
-    <div class="info-note">
-      <strong>✅ Развернуто на Netlify</strong><br>
-      Домен готов для настройки в @BotFather
-    </div>
+
+    <button class="cancel-btn" onclick="cancelAuth()">Отмена</button>
   </div>
 
   <script>
-    // Генерация реалистичных данных пользователя
-    function generateTelegramUser() {
-      const names = [
-        { first: 'Алексей', last: 'Иванов' }, { first: 'Мария', last: 'Петрова' },
-        { first: 'Дмитрий', last: 'Сидоров' }, { first: 'Анна', last: 'Кузнецова' },
-        { first: 'Сергей', last: 'Попов' }, { first: 'Елена', last: 'Смирнова' },
-        { first: 'Иван', last: 'Фёдоров' }, { first: 'Ольга', last: 'Морозова' }
-      ];
+    // Флаг чтобы отслеживать, была ли уже отправка
+    let authSent = false;
+
+    function onTelegramAuth(user) {
+      if (authSent) {
+        console.log('Auth already sent, ignoring duplicate');
+        return;
+      }
       
-      const name = names[Math.floor(Math.random() * names.length)];
-      const username = `${name.first.toLowerCase()}_${name.last.toLowerCase()}_${Math.floor(Math.random() * 1000)}`;
-      const userId = Math.floor(100000000 + Math.random() * 900000000);
+      authSent = true;
+      console.log('🔐 Настоящий Telegram пользователь:', user);
       
-      return {
-        id: userId,
-        first_name: name.first,
-        last_name: name.last,
-        username: username,
+      if (window.teleAuth && typeof window.teleAuth.send === 'function') {
+        window.teleAuth.send(user);
+      } else {
+        console.log('✅ Успешный вход через Telegram!');
+        alert('Успешный вход!\n\nИмя: ' + user.first_name + '\nUsername: @' + user.username);
+      }
+    }
+
+    // Тест с токеном (должен пройти верификацию)
+    function testAuthWithToken() {
+      if (authSent) return;
+      authSent = true;
+      
+      const testUser = {
+        id: 123456789,
+        first_name: 'VerifiedUser',
+        username: 'verified_user',
         auth_date: Math.floor(Date.now() / 1000),
-        hash: 'tg_' + Math.random().toString(36).substr(2, 20)
+        hash: 'properly_signed_hash_here'
       };
+      
+      console.log('🧪 Тест с верификацией:', testUser);
+      if (window.teleAuth && typeof window.teleAuth.send === 'function') {
+        window.teleAuth.send(testUser);
+      }
     }
 
-    // Обновление интерфейса
-    function updateUI(user) {
-      document.getElementById('userAvatar').textContent = 
-        user.first_name[0] + (user.last_name ? user.last_name[0] : '');
-      document.getElementById('userName').textContent = 
-        `${user.first_name} ${user.last_name || ''}`.trim();
-      document.getElementById('userUsername').textContent = `@${user.username}`;
-      document.getElementById('userId').textContent = user.id;
+    // Тест без токена (не пройдет верификацию)
+    function testAuthWithoutToken() {
+      if (authSent) return;
+      authSent = true;
       
-      const now = new Date();
-      document.getElementById('authTime').textContent = 
-        now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      const testUser = {
+        id: 987654321,
+        first_name: 'TestUser',
+        username: 'testuser',
+        auth_date: Math.floor(Date.now() / 1000),
+        hash: 'invalid_hash'
+      };
+      
+      console.log('⚠️ Тест без верификации:', testUser);
+      if (window.teleAuth && typeof window.teleAuth.send === 'function') {
+        window.teleAuth.send(testUser);
+      }
     }
 
-    // Основная логика
-    document.getElementById('loginBtn').addEventListener('click', async function() {
-      const user = generateTelegramUser();
-      updateUI(user);
-      
-      // Анимация загрузки
-      const btn = this;
-      btn.innerHTML = '<span class="btn-icon">⏳</span><span>Выполняется вход...</span>';
-      btn.style.background = '#f59e0b';
-      
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Успех
-      btn.innerHTML = '<span class="btn-icon">✅</span><span>Успешный вход!</span>';
-      btn.style.background = '#10b981';
-      btn.classList.add('success');
-      
-      // Отправка данных
-      setTimeout(() => {
-        if (window.teleAuth && typeof window.teleAuth.send === 'function') {
-          window.teleAuth.send(user);
-        } else {
-          console.log('Telegram user data:', user);
-          // Для тестирования в браузере
-          alert('Авторизация успешна!\n\nИмя: ' + user.first_name + '\nUsername: @' + user.username);
-        }
-      }, 1000);
-    });
-
-    // Отмена
-    document.getElementById('cancelBtn').addEventListener('click', function() {
+    function cancelAuth() {
       if (window.teleAuth && typeof window.teleAuth.cancel === 'function') {
         window.teleAuth.cancel();
       } else {
         window.close();
       }
-    });
+    }
 
-    // Инициализация
-    document.addEventListener('DOMContentLoaded', () => {
-      const user = generateTelegramUser();
-      updateUI(user);
+    // Предотвращаем автоматическую отправку тестовых данных
+    window.addEventListener('load', () => {
+      console.log('🚀 Telegram Auth Page loaded');
+      console.log('📍 Domain:', window.location.hostname);
     });
   </script>
-</head>
+</body>
 </html>
