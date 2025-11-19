@@ -1,84 +1,110 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Telegram Login</title>
-  <style>
-    body {
-      font-family: system-ui, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
-    }
-    .container {
-      background: white;
-      color: #333;
-      padding: 40px;
-      border-radius: 15px;
-      text-align: center;
-      max-width: 400px;
-      width: 90%;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-    .success { background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; }
-  </style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Telegram Login</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .container {
+            background: white;
+            color: #333;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .instructions {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🔐 Telegram Login</h1>
-    <div id="widgetContainer">
-      <script async 
-        src="https://telegram.org/js/telegram-widget.js?22" 
-        data-telegram-login="YourMessengerAuthBot"
-        data-size="large" 
-        data-onauth="onTelegramAuth">
-      </script>
+    <div class="container">
+        <h1>🔐 Telegram Login</h1>
+        
+        <div class="instructions">
+            <strong>После входа через Telegram:</strong><br>
+            1. Скопируйте ваши данные ниже<br>
+            2. Вернитесь в приложение<br>
+            3. Введите данные вручную
+        </div>
+        
+        <div id="widgetContainer">
+            <script async 
+                src="https://telegram.org/js/telegram-widget.js?22" 
+                data-telegram-login="YourMessengerAuthBot"
+                data-size="large" 
+                data-onauth="onTelegramAuth">
+            </script>
+        </div>
+        
+        <div id="userData" style="display: none; margin: 20px 0; text-align: left; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+            <strong>Ваши данные для ввода в приложении:</strong><br>
+            <div id="dataDisplay"></div>
+        </div>
+        
+        <button onclick="window.close()" style="
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        ">Закрыть</button>
     </div>
-    <div id="status"></div>
-  </div>
 
-  <script>
-    // Функция для обработки входа
-    function onTelegramAuth(user) {
-      console.log('Telegram user:', user);
-      
-      // Сохраняем в localStorage
-      localStorage.setItem('telegramAuthData', JSON.stringify(user));
-      localStorage.setItem('telegramAuthTimestamp', Date.now());
-      
-      // Показываем статус
-      document.getElementById('status').className = 'success';
-      document.getElementById('status').innerHTML = `
-        <strong>✅ Успешный вход!</strong><br>
-        Имя: ${user.first_name}<br>
-        Закройте это окно и вернитесь в приложение
-      `;
-      
-      // Прячем виджет
-      document.getElementById('widgetContainer').style.display = 'none';
-      
-      // Автоматически закрываем через 5 секунд
-      setTimeout(() => {
-        window.close();
-      }, 5000);
-    }
+    <script>
+        function onTelegramAuth(user) {
+            console.log('🔐 Telegram user authenticated:', user);
+            
+            // Показываем данные пользователя
+            document.getElementById('userData').style.display = 'block';
+            document.getElementById('dataDisplay').innerHTML = `
+                Имя: <strong>${user.first_name}</strong><br>
+                Username: <strong>${user.username || 'не указан'}</strong><br>
+                User ID: <strong>${user.id}</strong>
+                <br><br>
+                <em>Скопируйте эти данные и введите в приложении</em>
+            `;
+            
+            // Прячем виджет
+            document.getElementById('widgetContainer').style.display = 'none';
+        }
 
-    // Проверяем, может данные уже в URL (редirect от Telegram)
-    function checkUrlForAuth() {
-      const hash = window.location.hash;
-      if (hash && hash.includes('tgAuth')) {
-        console.log('Found auth data in URL');
-        // Обрабатываем данные из URL
-      }
-    }
-
-    // Запускаем проверку
-    checkUrlForAuth();
-  </script>
+        // Проверяем загрузку виджета
+        setTimeout(() => {
+            const widget = document.querySelector('.tgme_widget');
+            if (!widget) {
+                document.getElementById('widgetContainer').innerHTML = 
+                    '<p style="color: red;">Виджет не загрузился. Обновите страницу.</p>';
+            }
+        }, 3000);
+    </script>
 </body>
 </html>
