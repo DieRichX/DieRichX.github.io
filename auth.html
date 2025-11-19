@@ -25,138 +25,60 @@
       width: 90%;
       box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
-    h1 {
-      margin-bottom: 10px;
-    }
-    .subtitle {
-      color: #666;
-      margin-bottom: 30px;
-    }
-    .widget-container {
-      margin: 30px 0;
-      min-height: 50px;
-    }
-    .status {
-      padding: 15px;
-      border-radius: 8px;
-      margin: 20px 0;
-      font-size: 14px;
-    }
-    .success {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-    .error {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-    .info {
-      background: #d1ecf1;
-      color: #0c5460;
-      border: 1px solid #bee5eb;
-    }
+    .success { background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🔐 Вход в мессенджер</h1>
-    <div class="subtitle">Через ваш аккаунт Telegram</div>
-    
-    <div class="widget-container">
-      <!-- ИСПОЛЬЗУЕМ НОВОГО БОТА -->
+    <h1>🔐 Telegram Login</h1>
+    <div id="widgetContainer">
       <script async 
         src="https://telegram.org/js/telegram-widget.js?22" 
         data-telegram-login="YourMessengerAuthBot"
         data-size="large" 
-        data-userpic="true"
         data-onauth="onTelegramAuth">
       </script>
     </div>
-
-    <div id="status" class="status info">
-      Загрузка системы входа Telegram...
-    </div>
-
-    <button onclick="window.close()" style="
-      background: #6c757d;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-    ">Закрыть</button>
+    <div id="status"></div>
   </div>
 
   <script>
-    // Функция для реального входа через Telegram
+    // Функция для обработки входа
     function onTelegramAuth(user) {
-      console.log('🔐 РЕАЛЬНЫЙ пользователь Telegram:', user);
+      console.log('Telegram user:', user);
       
-      // Показываем успех
-      const status = document.getElementById('status');
-      status.className = 'status success';
-      status.innerHTML = `
-        <strong>✅ Вход выполнен!</strong><br>
+      // Сохраняем в localStorage
+      localStorage.setItem('telegramAuthData', JSON.stringify(user));
+      localStorage.setItem('telegramAuthTimestamp', Date.now());
+      
+      // Показываем статус
+      document.getElementById('status').className = 'success';
+      document.getElementById('status').innerHTML = `
+        <strong>✅ Успешный вход!</strong><br>
         Имя: ${user.first_name}<br>
-        Username: @${user.username || 'не указан'}<br>
-        ID: ${user.id}
+        Закройте это окно и вернитесь в приложение
       `;
       
-      // Передаем данные в Electron приложение (если открыто в Electron)
-      if (window.teleAuth && typeof window.teleAuth.send === 'function') {
-        window.teleAuth.send(user);
-      }
+      // Прячем виджет
+      document.getElementById('widgetContainer').style.display = 'none';
       
-      // Автоматически закрываем через 3 секунды
+      // Автоматически закрываем через 5 секунд
       setTimeout(() => {
-        if (window.teleAuth && typeof window.teleAuth.cancel === 'function') {
-          window.teleAuth.cancel();
-        } else {
-          window.close();
-        }
-      }, 3000);
+        window.close();
+      }, 5000);
     }
 
-    // Проверяем загрузку виджета
-    setTimeout(() => {
-      const widget = document.querySelector('.tgme_widget');
-      const status = document.getElementById('status');
-      
-      if (widget && widget.offsetParent !== null) {
-        status.className = 'status success';
-        status.innerHTML = '✅ Готово! Нажмите кнопку "Login with Telegram" выше';
-      } else {
-        status.className = 'status error';
-        status.innerHTML = `
-          ❌ Кнопка входа не загрузилась<br><br>
-          <strong>Проверьте:</strong><br>
-          • Бот: <strong>YourMessengerAuthBot</strong><br>
-          • Домен: <strong>dierichx.github.io</strong><br>
-          • Страница: <strong>auth.html</strong>
-        `;
+    // Проверяем, может данные уже в URL (редirect от Telegram)
+    function checkUrlForAuth() {
+      const hash = window.location.hash;
+      if (hash && hash.includes('tgAuth')) {
+        console.log('Found auth data in URL');
+        // Обрабатываем данные из URL
       }
-    }, 3000);
-
-    // Дополнительная проверка через 5 секунд
-    setTimeout(() => {
-      const widget = document.querySelector('.tgme_widget');
-      if (!widget) {
-        console.log('Telegram widget still not loaded');
-      }
-    }, 5000);
-    function closeWindow() {
-      // Сохраняем данные в localStorage для Electron
-      if (window.opener) {
-        window.opener.postMessage('telegram-auth-complete', '*');
-      }
-      window.close();
     }
 
-    // Автоматически закрываем через 3 секунды
-    setTimeout(closeWindow, 3000);
+    // Запускаем проверку
+    checkUrlForAuth();
   </script>
 </body>
 </html>
-
