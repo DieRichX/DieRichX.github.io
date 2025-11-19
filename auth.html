@@ -146,6 +146,17 @@
         console.log('Telegram widget still not loaded');
       }
     }, 5000);
+    function closeWindow() {
+      // Сохраняем данные в localStorage для Electron
+      if (window.opener) {
+        window.opener.postMessage('telegram-auth-complete', '*');
+      }
+      window.close();
+    }
+
+    // Автоматически закрываем через 3 секунды
+    setTimeout(closeWindow, 3000);
   </script>
 </body>
 </html>
+
