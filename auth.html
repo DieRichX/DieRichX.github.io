@@ -33,30 +33,11 @@
       font-size: 14px;
     }
     .telegram-widget {
-      margin: 25px 0;
-    }
-    .dev-section {
-      background: #f7fafc;
-      padding: 15px;
-      border-radius: 10px;
-      margin: 20px 0;
-      border-left: 4px solid #e53e3e;
-    }
-    .dev-title {
-      color: #e53e3e;
-      font-size: 12px;
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
-    .test-btn {
-      background: #e53e3e;
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-      margin: 5px;
+      margin: 30px 0;
+      min-height: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     .cancel-btn {
       background: #718096;
@@ -66,17 +47,38 @@
       border-radius: 8px;
       font-size: 14px;
       cursor: pointer;
-      margin-top: 15px;
+      margin-top: 20px;
+    }
+    .status {
+      margin: 15px 0;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    .status.error {
+      background: #fed7d7;
+      color: #c53030;
+      border: 1px solid #feb2b2;
+    }
+    .status.info {
+      background: #bee3f8;
+      color: #2c5282;
+      border: 1px solid #90cdf4;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>🔐 Войти через Telegram</h2>
-    <div class="description">Используйте кнопку ниже для безопасного входа</div>
+    <div class="description">Используйте кнопку ниже для входа через ваш аккаунт Telegram</div>
     
+    <!-- Статус виджета -->
+    <div id="widgetStatus" class="status info">
+      Загрузка Telegram виджета...
+    </div>
+
     <!-- Настоящий Telegram Widget -->
-    <div class="telegram-widget">
+    <div class="telegram-widget" id="widgetContainer">
       <script async 
         src="https://telegram.org/js/telegram-widget.js?22" 
         data-telegram-login="Messenger_Tests_bot"
@@ -87,21 +89,10 @@
       </script>
     </div>
 
-    <!-- Секция для разработчиков -->
-    <div class="dev-section">
-      <div class="dev-title">⚙️ ДЛЯ РАЗРАБОТЧИКОВ</div>
-      <div style="font-size: 11px; color: #4a5568; margin-bottom: 10px;">
-        Эти кнопки только для тестирования. Не используйте для реальных пользователей!
-      </div>
-      <button class="test-btn" onclick="testAuthWithToken()">Тест с токеном</button>
-      <button class="test-btn" onclick="testAuthWithoutToken()">Тест без токена</button>
-    </div>
-
     <button class="cancel-btn" onclick="cancelAuth()">Отмена</button>
   </div>
 
   <script>
-    // Флаг чтобы отслеживать, была ли уже отправка
     let authSent = false;
 
     function onTelegramAuth(user) {
@@ -113,49 +104,16 @@
       authSent = true;
       console.log('🔐 Настоящий Telegram пользователь:', user);
       
+      // Показываем статус
+      document.getElementById('widgetStatus').className = 'status info';
+      document.getElementById('widgetStatus').textContent = '✅ Успешный вход! Передача данных...';
+      
       if (window.teleAuth && typeof window.teleAuth.send === 'function') {
         window.teleAuth.send(user);
       } else {
-        console.log('✅ Успешный вход через Telegram!');
-        alert('Успешный вход!\n\nИмя: ' + user.first_name + '\nUsername: @' + user.username);
-      }
-    }
-
-    // Тест с токеном (должен пройти верификацию)
-    function testAuthWithToken() {
-      if (authSent) return;
-      authSent = true;
-      
-      const testUser = {
-        id: 123456789,
-        first_name: 'VerifiedUser',
-        username: 'verified_user',
-        auth_date: Math.floor(Date.now() / 1000),
-        hash: 'properly_signed_hash_here'
-      };
-      
-      console.log('🧪 Тест с верификацией:', testUser);
-      if (window.teleAuth && typeof window.teleAuth.send === 'function') {
-        window.teleAuth.send(testUser);
-      }
-    }
-
-    // Тест без токена (не пройдет верификацию)
-    function testAuthWithoutToken() {
-      if (authSent) return;
-      authSent = true;
-      
-      const testUser = {
-        id: 987654321,
-        first_name: 'TestUser',
-        username: 'testuser',
-        auth_date: Math.floor(Date.now() / 1000),
-        hash: 'invalid_hash'
-      };
-      
-      console.log('⚠️ Тест без верификации:', testUser);
-      if (window.teleAuth && typeof window.teleAuth.send === 'function') {
-        window.teleAuth.send(testUser);
+        // Если не в Electron, показываем информацию
+        document.getElementById('widgetStatus').textContent = 
+          '✅ Вход выполнен! Имя: ' + user.first_name + ', @' + user.username;
       }
     }
 
@@ -167,10 +125,21 @@
       }
     }
 
-    // Предотвращаем автоматическую отправку тестовых данных
-    window.addEventListener('load', () => {
-      console.log('🚀 Telegram Auth Page loaded');
-      console.log('📍 Domain:', window.location.hostname);
+    // Проверяем загрузку виджета
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        const widget = document.querySelector('[data-telegram-login]');
+        if (widget && widget.offsetHeight > 0) {
+          document.getElementById('widgetStatus').textContent = 
+            '✅ Telegram виджет загружен. Нажмите на кнопку выше для входа.';
+        } else {
+          document.getElementById('widgetStatus').className = 'status error';
+          document.getElementById('widgetStatus').innerHTML = 
+            '❌ Виджет не загрузился. Проверьте:<br>' +
+            '1. Домен dierichx.github.io настроен в @BotFather<br>' +
+            '2. Бот Messenger_Tests_bot существует';
+        }
+      }, 2000);
     });
   </script>
 </body>
