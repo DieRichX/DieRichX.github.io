@@ -3,121 +3,100 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Telegram Login</title>
+  <title>Telegram Login - Реальный вход</title>
   <style>
     body {
-      font-family: system-ui, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100vh;
       margin: 0;
-      background: linear-gradient(135deg, #667eea, #764ba2);
+      background: #0088cc;
     }
     .container {
       background: white;
       padding: 40px;
-      border-radius: 15px;
+      border-radius: 12px;
       text-align: center;
-      max-width: 400px;
+      max-width: 380px;
       width: 90%;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
     }
-    h2 {
-      color: #2d3748;
+    h1 {
+      color: #333;
       margin-bottom: 10px;
+      font-size: 24px;
     }
-    .description {
-      color: #718096;
+    .subtitle {
+      color: #666;
       margin-bottom: 30px;
-      font-size: 14px;
     }
-    .telegram-widget {
-      margin: 30px 0;
-      min-height: 60px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .cancel-btn {
-      background: #718096;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 14px;
-      cursor: pointer;
-      margin-top: 20px;
+    .widget-container {
+      margin: 25px 0;
+      min-height: 50px;
     }
     .status {
-      margin: 15px 0;
-      padding: 10px;
+      padding: 12px;
       border-radius: 8px;
-      font-size: 13px;
+      margin: 15px 0;
+      font-size: 14px;
     }
-    .status.error {
-      background: #fed7d7;
-      color: #c53030;
-      border: 1px solid #feb2b2;
+    .loading {
+      background: #e3f2fd;
+      color: #1565c0;
     }
-    .status.info {
-      background: #bee3f8;
-      color: #2c5282;
-      border: 1px solid #90cdf4;
+    .error {
+      background: #ffebee;
+      color: #c62828;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>🔐 Войти через Telegram</h2>
-    <div class="description">Используйте кнопку ниже для входа через ваш аккаунт Telegram</div>
+    <h1>Вход в мессенджер</h1>
+    <div class="subtitle">Через ваш аккаунт Telegram</div>
     
-    <!-- Статус виджета -->
-    <div id="widgetStatus" class="status info">
-      Загрузка Telegram виджета...
-    </div>
-
-    <!-- Настоящий Telegram Widget -->
-    <div class="telegram-widget" id="widgetContainer">
+    <div class="widget-container">
+      <!-- ЗАМЕНИТЕ Messenger_Tests_bot на ТОЧНЫЙ username вашего бота -->
       <script async 
         src="https://telegram.org/js/telegram-widget.js?22" 
         data-telegram-login="Messenger_Tests_bot"
         data-size="large" 
-        data-userpic="true"
-        data-onauth="onTelegramAuth" 
-        data-request-access="write">
+        data-userpic="false"
+        data-onauth="onTelegramAuth">
       </script>
     </div>
 
-    <button class="cancel-btn" onclick="cancelAuth()">Отмена</button>
+    <div class="status loading" id="status">
+      Загрузка системы входа...
+    </div>
+
+    <button onclick="closeWindow()" style="
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+    ">Закрыть</button>
   </div>
 
   <script>
-    let authSent = false;
-
+    // Функция для реального входа через Telegram
     function onTelegramAuth(user) {
-      if (authSent) {
-        console.log('Auth already sent, ignoring duplicate');
-        return;
-      }
+      console.log('🔐 РЕАЛЬНЫЙ пользователь Telegram:', user);
+      document.getElementById('status').textContent = '✅ Вход выполнен!';
       
-      authSent = true;
-      console.log('🔐 Настоящий Telegram пользователь:', user);
-      
-      // Показываем статус
-      document.getElementById('widgetStatus').className = 'status info';
-      document.getElementById('widgetStatus').textContent = '✅ Успешный вход! Передача данных...';
-      
+      // Передаем данные в Electron приложение
       if (window.teleAuth && typeof window.teleAuth.send === 'function') {
         window.teleAuth.send(user);
       } else {
-        // Если не в Electron, показываем информацию
-        document.getElementById('widgetStatus').textContent = 
-          '✅ Вход выполнен! Имя: ' + user.first_name + ', @' + user.username;
+        // Если открыто в браузере
+        alert('Вход выполнен: ' + user.first_name + ' (@' + (user.username || 'no_username') + ')');
       }
     }
 
-    function cancelAuth() {
+    function closeWindow() {
       if (window.teleAuth && typeof window.teleAuth.cancel === 'function') {
         window.teleAuth.cancel();
       } else {
@@ -126,21 +105,21 @@
     }
 
     // Проверяем загрузку виджета
-    window.addEventListener('load', function() {
-      setTimeout(function() {
-        const widget = document.querySelector('[data-telegram-login]');
-        if (widget && widget.offsetHeight > 0) {
-          document.getElementById('widgetStatus').textContent = 
-            '✅ Telegram виджет загружен. Нажмите на кнопку выше для входа.';
-        } else {
-          document.getElementById('widgetStatus').className = 'status error';
-          document.getElementById('widgetStatus').innerHTML = 
-            '❌ Виджет не загрузился. Проверьте:<br>' +
-            '1. Домен dierichx.github.io настроен в @BotFather<br>' +
-            '2. Бот Messenger_Tests_bot существует';
-        }
-      }, 2000);
-    });
+    setTimeout(() => {
+      const widget = document.querySelector('.tgme_widget_login');
+      if (widget && widget.offsetParent !== null) {
+        document.getElementById('status').textContent = '✅ Готово! Нажмите кнопку выше для входа';
+      } else {
+        document.getElementById('status').className = 'status error';
+        document.getElementById('status').innerHTML = `
+          ❌ Кнопка входа не загрузилась<br><br>
+          <strong>Решение:</strong><br>
+          1. Убедитесь что в @BotFather для бота <strong>Messenger_Tests_bot</strong><br>
+          2. Указан домен: <strong>dierichx.github.io</strong><br>
+          3. Бот активен и не имеет ограничений
+        `;
+      }
+    }, 3000);
   </script>
 </body>
 </html>
